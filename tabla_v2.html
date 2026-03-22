@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla Periódica - Bio-Digital Edition</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #818cf8;
+            --accent: #e74c3c;
+            --bg-color: #0f172a;
+            --text: #333;
+            --white: #ffffff;
+            --black: #1e293b;
+            --color-fuente: #fff;
+            --color_fondo: #000;
+            --card-bg: #161b22;
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --energy-color: #f9e231;
+            --border-color: #30363d;
+            --footer-color: #8b949e;
+
+            /* Colores por Categoría */
+            --alcalinos: #ff7b72;
+            --alcalinoterreos: #ffa657;
+            --transicion: #d2a8ff;
+            --otros-metales: #7ee787;
+            --no-metales: #58a6ff;
+            --halogenos: #ffea7f;
+            --gases-nobles: #ff78cb;
+            --lantanidos: #7afaff;
+            --actinidos: #ff9bce;
+            --o_metales: #40ff00;
+            --metaloides: #ff0000;
+            --ele_desconocidos: #595959;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+            /*    margin-bottom: 30px;*/
+        }
+
+        .table-container {
+            width: 95vw;
+            overflow-x: auto;
+            padding: 20px;
+        }
+
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, minmax(65px, 1fr));
+            grid-gap: 4px;
+            min-width: 1100px;
+        }
+
+        .element {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: default;
+            position: relative;
+            min-height: 85px;
+            font-size: 0.65rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .element:hover {
+            transform: scale(1.15);
+            z-index: 10;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-color), inset 0 0 5px var(--accent-color);
+        }
+
+        /* Clases de Colores */
+        .alcalino {
+            color: var(--alcalinos);
+            border-top: 3px solid var(--alcalinos);
+        }
+
+        .alcalinoterreo {
+            color: var(--alcalinoterreos);
+            border-top: 3px solid var(--alcalinoterreos);
+        }
+
+        .transicion {
+            color: var(--transicion);
+            border-top: 3px solid var(--transicion);
+        }
+
+        .no-metal {
+            color: var(--no-metales);
+            border-top: 3px solid var(--no-metales);
+        }
+
+        .halogeno {
+            color: var(--halogenos);
+            border-top: 3px solid var(--halogenos);
+        }
+
+        .noble {
+            color: var(--gases-nobles);
+            border-top: 3px solid var(--gases-nobles);
+        }
+
+        .lantanido {
+            color: var(--lantanidos);
+            border-top: 3px solid var(--lantanidos);
+        }
+
+        .actinido {
+            color: var(--actinidos);
+            border-top: 3px solid var(--actinidos);
+        }
+
+        .otros-metales {
+            color: var(--o_metales);
+            border-top: 3px solid var(--o_metales);
+        }
+
+        .metaloides {
+            color: var(--metaloides);
+            border-top: 3px solid var(--metaloides);
+        }
+
+        .ele_desconocidos {
+            color: var(--ele_desconocidos);
+            border-top: 3px solid var(--ele_desconocidos);
+        }
+
+        /* Ubicación*/
+        .number {
+            font-size: 0.7rem;
+            align-self: flex-start;
+            opacity: 0.8;
+        }
+
+        .symbol {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+
+        .name {
+            font-size: 0.6rem;
+            text-align: center;
+        }
+
+        .mass {
+            color: var(--secondary);
+            font-size: 0.6rem;
+        }
+
+        .details {
+            display: none;
+            position: absolute;
+            background: var(--black);
+            border: 1px solid var(--accent-color);
+            padding: 5px;
+            border-radius: 4px;
+            bottom: 100%;
+            width: 120px;
+            z-index: 20;
+            font-size: 0.7rem;
+            color: var(--white);
+            pointer-events: none;
+        }
+
+        .element:hover .details {
+            display: block;
+        }
+
+        .info-label {
+            color: var(--footer-color);
+        }
+
+        .info-val {
+            color: var(--energy-color);
+            font-weight: bold;
+        }
+
+        /* Espaciador para Lantánidos y Actínidos */
+        .spacer {
+            grid-row: 8;
+            height: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Tabla Periódica de los Elementos</h1>
+    <div class="table-container">
+        <div class="periodic-table" id="table"></div>
+    </div>
+
+    <script>
+        // Datos extraídos y organizados basados en tus fuentes [cite: 1, 14, 21]
+        const elements = [
+            { n: 1, s: "H", name: "Hidrógeno", mass: 1.008, en: 2.1, ei: 13.6, ox: "+1, -1", col: 1, row: 1, url: "https://es.wikipedia.org/wiki/Hidr%C3%B3geno", cat: "no-metal" },
+            { n: 2, s: "He", name: "Helio", mass: 4.002, en: "N/A", ei: 24.6, ox: "0", col: 18, row: 1, url: "", cat: "noble" },
+            { n: 3, s: "Li", name: "Litio", mass: 6.941, en: 1.0, ei: 5.4, ox: "+1", col: 1, row: 2, url: "", cat: "alcalino" },
+            { n: 4, s: "Be", name: "Berilio", mass: 9.012, en: 1.5, ei: 9.3, ox: "+2", col: 2, row: 2, url: "", cat: "alcalinoterreo" },
+            { n: 5, s: "B", name: "Boro", mass: 10.81, en: 2.0, ei: 8.3, ox: "+3", col: 13, row: 2, url: "", cat: "metaloides" },
+            { n: 6, s: "C", name: "Carbono", mass: 12.01, en: 2.5, ei: 11.3, ox: "+4, -4", col: 14, row: 2, url: "", cat: "no-metal" },
+            { n: 7, s: "N", name: "Nitrógeno", mass: 14.01, en: 3.0, ei: 14.5, ox: "+5, +3, -3", col: 15, row: 2, url: "", cat: "no-metal" },
+            { n: 8, s: "O", name: "Oxígeno", mass: 16.00, en: 3.5, ei: 13.6, ox: "-2", col: 16, row: 2, url: "", cat: "no-metal" },
+            { n: 9, s: "F", name: "Flúor", mass: 19.00, en: 4.0, ei: 17.4, ox: "-1", col: 17, row: 2, url: "", cat: "halogeno" },
+            { n: 10, s: "Ne", name: "Neón", mass: 20.18, en: "N/A", ei: 21.6, ox: "0", col: 18, row: 2, url: "", cat: "noble" },
+            { n: 11, s: "Na", name: "Sodio", mass: 22.99, en: 0.93, ei: 5.1, ox: "+1", col: 1, row: 3, url: "", cat: "alcalino" },
+            { n: 12, s: "Mg", name: "Magnesio", mass: 24.31, en: 1.31, ei: 7.6, ox: "+2", col: 2, row: 3, url: "", cat: "alcalinoterreo" },
+            { n: 13, s: "Al", name: "Aluminio", mass: 26.98, en: 1.61, ei: 6.0, ox: "+3", col: 13, row: 3, url: "", cat: "otros-metales" },
+            { n: 14, s: "Si", name: "Silicio", mass: 28.09, en: 1.90, ei: 8.1, ox: "+4,±2", col: 14, row: 3, url: "", cat: "metaloides" },
+            { n: 15, s: "P", name: "Fósforo", mass: 30.97, en: 2.19, ei: 10.5, ox: "±3,5", col: 15, row: 3, url: "", cat: "no-metal" },
+            { n: 16, s: "S", name: "Azufre", mass: 32.06, en: 2.58, ei: 10.4, ox: "±2,4,6", col: 16, row: 3, url: "", cat: "no-metal" },
+            { n: 17, s: "Cl", name: "Cloro", mass: 35.45, en: 3.16, ei: 13.0, ox: "±1,3,5,7", col: 17, row: 3, url: "", cat: "halogeno" },
+            { n: 18, s: "Ar", name: "Argón", mass: 39.95, en: "-", ei: 15.8, ox: "0", col: 18, row: 3, url: "", cat: "noble" },
+
+            // --- FILA 4 (Periodo 4) ---
+            { n: 19, s: "K", name: "Potasio", mass: 39.09, en: 0.82, ei: 4.34, ox: "+1", col: 1, row: 4, url: "", cat: "alcalino" },
+            { n: 20, s: "Ca", name: "Calcio", mass: 40.07, en: 1.00, ei: 6.11, ox: "+2", col: 2, row: 4, url: "", cat: "alcalinoterreo" },
+            { n: 21, s: "Sc", name: "Escandio", mass: 44.95, en: 1.36, ei: 6.56, ox: "+3", col: 3, row: 4, url: "", cat: "transicion" },
+            { n: 22, s: "Ti", name: "Titanio", mass: 47.86, en: 1.54, ei: 6.82, ox: "+4,+3", col: 4, row: 4, url: "", cat: "transicion" },
+            { n: 23, s: "V", name: "Vanadio", mass: 50.94, en: 1.63, ei: 6.74, ox: "+5,+4,+3,+2", col: 5, row: 4, url: "", cat: "transicion" },
+            { n: 24, s: "Cr", name: "Cromo", mass: 51.99, en: 1.66, ei: 6.76, ox: "+6,+3,+2", col: 6, row: 4, url: "", cat: "transicion" },
+            { n: 25, s: "Mn", name: "Manganeso", mass: 54.93, en: 1.55, ei: 7.43, ox: "+7,+4,+3,+2", col: 7, row: 4, url: "", cat: "transicion" },
+            { n: 26, s: "Fe", name: "Hierro", mass: 55.84, en: 1.83, ei: 7.90, ox: "+3,+2", col: 8, row: 4, url: "", cat: "transicion" },
+            { n: 27, s: "Co", name: "Cobalto", mass: 58.93, en: 1.88, ei: 7.88, ox: "+3,+2", col: 9, row: 4, url: "", cat: "transicion" },
+            { n: 28, s: "Ni", name: "Níquel", mass: 58.69, en: 1.91, ei: 7.63, ox: "+3,+2", col: 10, row: 4, url: "", cat: "transicion" },
+            { n: 29, s: "Cu", name: "Cobre", mass: 63.54, en: 1.90, ei: 7.72, ox: "+2,+1", col: 11, row: 4, url: "", cat: "transicion" },
+            { n: 30, s: "Zn", name: "Zinc", mass: 65.38, en: 1.65, ei: 9.39, ox: "+2", col: 12, row: 4, url: "", cat: "transicion" },
+            { n: 31, s: "Ga", name: "Galio", mass: 69.72, en: 1.81, ei: 6.00, ox: "+3", col: 13, row: 4, url: "", cat: "otros-metales" },
+            { n: 32, s: "Ge", name: "Germanio", mass: 72.63, en: 2.01, ei: 7.90, ox: "+4,+2", col: 14, row: 4, url: "", cat: "metaloides" },
+            { n: 33, s: "As", name: "Arsénico", mass: 74.92, en: 2.18, ei: 9.81, ox: "+5,+3,-3", col: 15, row: 4, url: "", cat: "metaloides" },
+            { n: 34, s: "Se", name: "Selenio", mass: 78.97, en: 2.55, ei: 9.75, ox: "+6,+4,-2", col: 16, row: 4, url: "", cat: "no-metal" },
+            { n: 35, s: "Br", name: "Bromo", mass: 79.90, en: 2.96, ei: 11.81, ox: "+5,+1,-1", col: 17, row: 4, url: "", cat: "halogeno" },
+            { n: 36, s: "Kr", name: "Kriptón", mass: 83.79, en: 3.00, ei: 13.99, ox: "0", col: 18, row: 4, url: "", cat: "noble" },
+
+            // --- FILA 5 (Periodo 5) ---
+            { n: 37, s: "Rb", name: "Rubidio", mass: 85.46, en: 0.82, ei: 4.17, ox: "+1", col: 1, row: 5, url: "", cat: "alcalino" },
+            { n: 38, s: "Sr", name: "Estroncio", mass: 87.62, en: 0.95, ei: 5.69, ox: "+2", col: 2, row: 5, url: "", cat: "alcalinoterreo" },
+            { n: 39, s: "Y", name: "Itrio", mass: 88.90, en: 1.22, ei: 6.21, ox: "+3", col: 3, row: 5, url: "", cat: "transicion" },
+            { n: 40, s: "Zr", name: "Zirconio", mass: 91.22, en: 1.33, ei: 6.63, ox: "+4", col: 4, row: 5, url: "", cat: "transicion" },
+            { n: 41, s: "Nb", name: "Niobio", mass: 92.90, en: 1.60, ei: 6.75, ox: "+5,+3", col: 5, row: 5, url: "", cat: "transicion" },
+            { n: 42, s: "Mo", name: "Molibdeno", mass: 95.95, en: 2.16, ei: 7.09, ox: "+6,+4", col: 6, row: 5, url: "", cat: "transicion" },
+            { n: 43, s: "Tc", name: "Tecnecio", mass: 98.00, en: 1.90, ei: 7.28, ox: "+7", col: 7, row: 5, url: "", cat: "transicion" },
+            { n: 44, s: "Ru", name: "Rutenio", mass: 101.07, en: 2.20, ei: 7.36, ox: "+3,+4", col: 8, row: 5, url: "", cat: "transicion" },
+            { n: 45, s: "Rh", name: "Rodio", mass: 102.90, en: 2.28, ei: 7.45, ox: "+3", col: 9, row: 5, url: "", cat: "transicion" },
+            { n: 46, s: "Pd", name: "Paladio", mass: 106.42, en: 2.20, ei: 8.33, ox: "+2,+4", col: 10, row: 5, url: "", cat: "transicion" },
+            { n: 47, s: "Ag", name: "Plata", mass: 107.86, en: 1.93, ei: 7.57, ox: "+1", col: 11, row: 5, url: "", cat: "transicion" },
+            { n: 48, s: "Cd", name: "Cadmio", mass: 112.41, en: 1.69, ei: 8.99, ox: "+2", col: 12, row: 5, url: "", cat: "transicion" },
+            { n: 49, s: "In", name: "Indio", mass: 114.81, en: 1.78, ei: 5.78, ox: "+3", col: 13, row: 5, url: "", cat: "otros-metales" },
+            { n: 50, s: "Sn", name: "Estaño", mass: 118.71, en: 1.96, ei: 7.34, ox: "+4,+2", col: 14, row: 5, url: "", cat: "otros-metales" },
+            { n: 51, s: "Sb", name: "Antimonio", mass: 121.76, en: 2.05, ei: 8.60, ox: "+5,+3", col: 15, row: 5, url: "", cat: "metaloides" },
+            { n: 52, s: "Te", name: "Teluro", mass: 127.60, en: 2.10, ei: 9.00, ox: "+6,+4,-2", col: 16, row: 5, url: "", cat: "metaloides" },
+            { n: 53, s: "I", name: "Yodo", mass: 126.90, en: 2.66, ei: 10.45, ox: "+5,+7,-1", col: 17, row: 5, url: "", cat: "halogeno" },
+            { n: 54, s: "Xe", name: "Xenón", mass: 131.29, en: 2.60, ei: 12.13, ox: "0", col: 18, row: 5, url: "", cat: "noble" },
+
+            // --- FILA 6 (Periodo 6) ---
+            { n: 55, s: "Cs", name: "Cesio", mass: 132.90, en: 0.79, ei: 3.89, ox: "+1", col: 1, row: 6, url: "", cat: "alcalino" },
+            { n: 56, s: "Ba", name: "Bario", mass: 137.32, en: 0.89, ei: 5.21, ox: "+2", col: 2, row: 6, url: "", cat: "alcalinoterreo" },
+            { n: 71, s: "Lu", name: "Lutecio", mass: 174.96, en: 1.27, ei: 5.23, ox: "+3", col: 3, row: 6, url: "", cat: "transicion" },
+            { n: 72, s: "Hf", name: "Hafnio", mass: 178.49, en: 1.30, ei: 6.82, ox: "+4", col: 4, row: 6, url: "", cat: "transicion" },
+            { n: 73, s: "Ta", name: "Tántalo", mass: 180.94, en: 1.50, ei: 7.54, ox: "+5", col: 5, row: 6, url: "", cat: "transicion" },
+            { n: 74, s: "W", name: "Wolframio", mass: 183.84, en: 2.36, ei: 7.86, ox: "+6", col: 6, row: 6, url: "", cat: "transicion" },
+            { n: 75, s: "Re", name: "Renio", mass: 186.20, en: 1.90, ei: 7.83, ox: "+7,+4", col: 7, row: 6, url: "", cat: "transicion" },
+            { n: 76, s: "Os", name: "Osmio", mass: 190.23, en: 2.20, ei: 8.43, ox: "+4,+8", col: 8, row: 6, url: "", cat: "transicion" },
+            { n: 77, s: "Ir", name: "Iridio", mass: 192.21, en: 2.20, ei: 8.96, ox: "+3,+4", col: 9, row: 6, url: "", cat: "transicion" },
+            { n: 78, s: "Pt", name: "Platino", mass: 195.08, en: 2.28, ei: 8.99, ox: "+2,+4", col: 10, row: 6, url: "", cat: "transicion" },
+            { n: 79, s: "Au", name: "Oro", mass: 196.96, en: 2.54, ei: 9.22, ox: "+3,+1", col: 11, row: 6, url: "", cat: "transicion" },
+            { n: 80, s: "Hg", name: "Mercurio", mass: 200.59, en: 2.00, ei: 10.43, ox: "+2,+1", col: 12, row: 6, url: "", cat: "transicion" },
+            { n: 81, s: "Tl", name: "Talio", mass: 204.38, en: 1.62, ei: 6.10, ox: "+3,+1", col: 13, row: 6, url: "", cat: "otros-metales" },
+            { n: 82, s: "Pb", name: "Plomo", mass: 207.20, en: 2.33, ei: 7.41, ox: "+2,+4", col: 14, row: 6, url: "", cat: "otros-metales" },
+            { n: 83, s: "Bi", name: "Bismuto", mass: 208.98, en: 2.02, ei: 7.28, ox: "+3,+5", col: 15, row: 6, url: "", cat: "otros-metales" },
+            { n: 84, s: "Po", name: "Polonio", mass: 209.00, en: 2.00, ei: 8.41, ox: "+4,+2", col: 16, row: 6, url: "", cat: "metaloides" },
+            { n: 85, s: "At", name: "Astato", mass: 210.00, en: 2.20, ei: 9.30, ox: "+1,-1", col: 17, row: 6, url: "", cat: "halogeno" },
+            { n: 86, s: "Rn", name: "Radón", mass: 222.00, en: 2.20, ei: 10.74, ox: "0", col: 18, row: 6, url: "", cat: "noble" },
+
+            // --- FILA 7 (Periodo 7) ---
+            { n: 87, s: "Fr", name: "Francio", mass: 223, en: 0.7, ei: 4.07, ox: "+1", col: 1, row: 7, cat: "alcalino" },
+            { n: 88, s: "Ra", name: "Radio", mass: 226, en: 0.9, ei: 5.28, ox: "+2", col: 2, row: 7, cat: "alcalinoterreo" },
+            { n: 103, s: "Lr", name: "Lawrencio", mass: 262, en: "-", ei: 6.0, ox: "+3", col: 3, row: 7, url: "https://es.wikipedia.org/wiki/Lawrencio", cat: "transicion" },
+            { n: 104, s: "Rf", name: "Rutherfordio", mass: 267, en: "-", ei: 6.0, ox: "+4", col: 4, row: 7, cat: "transicion" },
+            { n: 105, s: "Db", name: "Dubnio", mass: 268, en: "-", ei: null, ox: "+5", col: 5, row: 7, cat: "transicion" },
+            { n: 106, s: "Sg", name: "Seaborgio", mass: 269, en: "-", ei: null, ox: "+6", col: 6, row: 7, cat: "transicion" },
+            { n: 107, s: "Bh", name: "Bohrio", mass: 270, en: "-", ei: null, ox: "+7", col: 7, row: 7, cat: "transicion" },
+            { n: 108, s: "Hs", name: "Hasio", mass: 269, en: "-", ei: null, ox: "+8", col: 8, row: 7, cat: "transicion" },
+            { n: 109, s: "Mt", name: "Meitnerio", mass: 278, en: "-", ei: null, ox: null, col: 9, row: 7, cat: "transicion" },
+            { n: 110, s: "Ds", name: "Darmstadio", mass: 281, en: "-", ei: null, ox: null, col: 10, row: 7, cat: "transicion" },
+            { n: 111, s: "Rg", name: "Roentgenio", mass: 282, en: "-", ei: null, ox: null, col: 11, row: 7, cat: "transicion" },
+            { n: 112, s: "Cn", name: "Copernicio", mass: 285, en: "-", ei: 11.97, ox: "+2", col: 12, row: 7, cat: "transicion" },
+            { n: 113, s: "Nh", name: "Nihonio", mass: 286, en: "-", ei: null, ox: null, col: 13, row: 7, cat: "otros-metales" },
+            { n: 114, s: "Fl", name: "Flerovio", mass: 289, en: "-", ei: null, ox: null, col: 14, row: 7, cat: "otros-metales" },
+            { n: 115, s: "Mc", name: "Moscovio", mass: 290, en: "-", ei: null, ox: null, col: 15, row: 7, cat: "otros-metales" },
+            { n: 116, s: "Lv", name: "Livermorio", mass: 293, en: "-", ei: null, ox: null, col: 16, row: 7, cat: "otros-metales" },
+            { n: 117, s: "Ts", name: "Teneso", mass: 294, en: "-", ei: null, ox: null, col: 17, row: 7, cat: "halogeno" },
+            { n: 118, s: "Og", name: "Oganesón", mass: 294, en: "-", ei: null, ox: 0, col: 18, row: 7, cat: "noble" },
+
+            // FILA 9: Lantánidos
+            { n: 57, s: "La", name: "Lantano", mass: 138.9, en: 1.1, ei: 5.57, ox: "+3", col: 4, row: 9, cat: "lantanido" },
+            { n: 58, s: "Ce", name: "Cerio", mass: 140.1, en: 1.12, ei: 5.53, ox: "+3,+4", col: 5, row: 9, cat: "lantanido" },
+            { n: 59, s: "Pr", name: "Praseodimio", mass: 140.9, en: 1.13, ei: 5.47, ox: "+3", col: 6, row: 9, cat: "lantanido" },
+            { n: 60, s: "Nd", name: "Neodimio", mass: 144.2, en: 1.14, ei: 5.52, ox: "+3", col: 7, row: 9, cat: "lantanido" },
+            { n: 61, s: "Pm", name: "Prometio", mass: 145, en: 1.13, ei: 5.58, ox: "+3", col: 8, row: 9, cat: "lantanido" },
+            { n: 62, s: "Sm", name: "Samario", mass: 150.3, en: 1.17, ei: 5.64, ox: "+3,+2", col: 9, row: 9, cat: "lantanido" },
+            { n: 63, s: "Eu", name: "Europio", mass: 151.9, en: 1.2, ei: 5.67, ox: "+3,+2", col: 10, row: 9, cat: "lantanido" },
+            { n: 64, s: "Gd", name: "Gadolinio", mass: 157.2, en: 1.2, ei: 6.15, ox: "+3", col: 11, row: 9, cat: "lantanido" },
+            { n: 65, s: "Tb", name: "Terbio", mass: 158.9, en: 1.2, ei: 5.86, ox: "+3", col: 12, row: 9, cat: "lantanido" },
+            { n: 66, s: "Dy", name: "Disprosio", mass: 162.5, en: 1.22, ei: 5.93, ox: "+3", col: 13, row: 9, cat: "lantanido" },
+            { n: 67, s: "Ho", name: "Holmio", mass: 164.9, en: 1.23, ei: 6.02, ox: "+3", col: 14, row: 9, cat: "lantanido" },
+            { n: 68, s: "Er", name: "Erbio", mass: 167.2, en: 1.24, ei: 6.1, ox: "+3", col: 15, row: 9, cat: "lantanido" },
+            { n: 69, s: "Tm", name: "Tulio", mass: 168.9, en: 1.25, ei: 6.18, ox: "+3", col: 16, row: 9, cat: "lantanido" },
+            { n: 70, s: "Yb", name: "Iterbio", mass: 173.0, en: 1.1, ei: 6.25, ox: "+3,+2", col: 17, row: 9, cat: "lantanido" },
+            { n: 71, s: "Lu", name: "Lutecio", mass: 174.9, en: 1.27, ei: 5.42, ox: "+3", col: 18, row: 9, cat: "lantanido" },
+
+            // FILA 10: Actínidos
+            { n: 89, s: "Ac", name: "Actinio", mass: 227, en: 1.1, ei: 5.17, ox: "+3", col: 4, row: 10, cat: "actinido" },
+            { n: 90, s: "Th", name: "Torio", mass: 232.0, en: 1.3, ei: 6.3, ox: "+4", col: 5, row: 10, cat: "actinido" },
+            { n: 91, s: "Pa", name: "Protactinio", mass: 231.0, en: 1.5, ei: 5.89, ox: "+5,+4", col: 6, row: 10, cat: "actinido" },
+            { n: 92, s: "U", name: "Uranio", mass: 238.0, en: 1.38, ei: 6.19, ox: "+6,+5,+4,+3", col: 7, row: 10, cat: "actinido" },
+            { n: 93, s: "Np", name: "Neptunio", mass: 237, en: 1.36, ei: 6.26, ox: "+6,+5,+4,+3", col: 8, row: 10, cat: "actinido" },
+            { n: 94, s: "Pu", name: "Plutonio", mass: 244, en: 1.28, ei: 6.02, ox: "+6,+5,+4,+3", col: 9, row: 10, cat: "actinido" },
+            { n: 95, s: "Am", name: "Americio", mass: 243, en: 1.3, ei: 5.97, ox: "+6,+5,+4,+3", col: 10, row: 10, cat: "actinido" },
+            { n: 96, s: "Cm", name: "Curio", mass: 247, en: 1.3, ei: 5.99, ox: "+3", col: 11, row: 10, cat: "actinido" },
+            { n: 97, s: "Bk", name: "Berkelio", mass: 247, en: 1.3, ei: 6.23, ox: "+4,+3", col: 12, row: 10, cat: "actinido" },
+            { n: 98, s: "Cf", name: "Californio", mass: 251, en: 1.3, ei: 6.3, ox: "+3", col: 13, row: 10, cat: "actinido" },
+            { n: 99, s: "Es", name: "Einstenio", mass: 252, en: 1.3, ei: 6.42, ox: "+3", col: 14, row: 10, cat: "actinido" },
+            { n: 100, s: "Fm", name: "Fermio", mass: 257, en: 1.3, ei: 6.5, ox: "+3", col: 15, row: 10, cat: "actinido" },
+            { n: 101, s: "Md", name: "Mendelevio", mass: 258, en: 1.3, ei: 6.58, ox: "+3,+2", col: 16, row: 10, cat: "actinido" },
+            { n: 102, s: "No", name: "Nobelio", mass: 259, en: 1.3, ei: 6.65, ox: "+3,+2", col: 17, row: 10, cat: "actinido" },
+            { n: 103, s: "Lr", name: "Laurencio", mass: 262, en: 1.3, ei: 4.9, ox: "+3", col: 18, row: 10, cat: "actinido" }
+            // ... (Para brevedad, he incluido los periodos 1 y 2, pero el motor está listo para recibir los 118)
+        ];
+
+        const container = document.getElementById('table');
+
+        elements.forEach(el => {
+            // 1. Decidimos si el contenedor principal es un link <a> o un <div>
+            const card = document.createElement(el.url ? 'a' : 'div');
+
+            // 2. Si es link, le ponemos sus atributos
+            if (el.url) {
+                card.href = el.url;
+                card.target = "_blank";
+            }
+
+            // 3. LE ASIGNAMOS LAS CLASES Y EL GRID AL MISMO 'CARD'
+            card.className = `element ${el.cat}`;
+            card.style.gridColumn = el.col;
+            card.style.gridRow = el.row;
+
+            // 4. LE PONEMOS EL CONTENIDO
+            card.innerHTML = `
+                <div class="number">${el.n}</div>
+                <div class="symbol">${el.s}</div>
+                <div class="name">${el.name}</div>
+                <div class="details">
+                    Masa: ${el.mass}<br>
+                    EN: ${el.en}<br>
+                    E. Ion: ${el.ei} eV<br>
+                    Ox: ${el.ox}
+                </div>
+            `;
+
+            // 5. AÑADIMOS EL 'CARD' AL CONTENEDOR (No un div aparte)
+            container.appendChild(card);
+        });
+
+    </script>
+</body>
+
+</html>
